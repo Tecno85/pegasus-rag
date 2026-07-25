@@ -84,7 +84,7 @@ cada checksum antes de usar un documento.
 ### Instalación
 
 ```bash
-git clone https://github.com/USUARIO/pegasus-rag.git
+git clone https://github.com/Tecno85/pegasus-rag.git
 cd pegasus-rag
 
 python3.11 -m venv .venv
@@ -222,7 +222,7 @@ Cierra la sesión SSH y entra nuevamente para aplicar el grupo `docker`.
 ### 3. Publicar la aplicación
 
 ```bash
-git clone https://github.com/USUARIO/pegasus-rag.git
+git clone https://github.com/Tecno85/pegasus-rag.git
 cd pegasus-rag
 cp .env.example .env
 nano .env
@@ -267,4 +267,3 @@ deploy/nginx/      reverse proxy para OCI
 El código se distribuye bajo la licencia MIT. Los documentos de demostración conservan las
 condiciones de sus respectivos autores y se descargan desde los enlaces suministrados por el
 Challenge.
-
