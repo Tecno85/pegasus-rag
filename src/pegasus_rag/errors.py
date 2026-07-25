@@ -45,6 +45,9 @@ class QuotaExceededError(GenerationError):
     """The free Gemini quota is exhausted."""
 
 
+class ModelUnavailableError(GenerationError):
+    """The configured Gemini model is retired or unavailable to this account."""
+
+
 class ProviderUnavailableError(GenerationError):
     """Gemini is temporarily unavailable or unreachable."""
-

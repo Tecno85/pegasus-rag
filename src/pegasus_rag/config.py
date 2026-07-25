@@ -60,7 +60,7 @@ class Settings:
         key = os.getenv("GEMINI_API_KEY", "").strip() or None
         return cls(
             gemini_api_key=key,
-            gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite").strip(),
+            gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite").strip(),
             embedding_model=os.getenv(
                 "EMBEDDING_MODEL",
                 "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -75,4 +75,3 @@ class Settings:
             raw_data_dir=project_root / "data" / "raw",
             index_dir=project_root / "data" / "index",
         )
-

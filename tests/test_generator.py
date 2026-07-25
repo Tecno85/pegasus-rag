@@ -1,6 +1,6 @@
 import pytest
 
-from pegasus_rag.errors import MissingApiKeyError, QuotaExceededError
+from pegasus_rag.errors import MissingApiKeyError, ModelUnavailableError, QuotaExceededError
 from pegasus_rag.generator import GeminiGenerator, build_prompt
 from pegasus_rag.models import DocumentChunk, SearchResult
 
@@ -57,4 +57,13 @@ def test_generator_translates_quota_error() -> None:
     chunk = DocumentChunk("id", "Evidencia", "Guía", "Página 1", "doc")
 
     with pytest.raises(QuotaExceededError, match="cuota gratuita"):
+        generator.generate("Pregunta", [SearchResult(chunk, 1.0)], [])
+
+
+def test_generator_reports_retired_model() -> None:
+    generator = GeminiGenerator("key", "retired-model")
+    generator._client = FakeClient(error=RuntimeError("404 NOT_FOUND model not available"))
+    chunk = DocumentChunk("id", "Evidencia", "Guía", "Página 1", "doc")
+
+    with pytest.raises(ModelUnavailableError, match="retired-model"):
         generator.generate("Pregunta", [SearchResult(chunk, 1.0)], [])

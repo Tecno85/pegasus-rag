@@ -7,6 +7,7 @@ from typing import Protocol
 from pegasus_rag.errors import (
     GenerationError,
     MissingApiKeyError,
+    ModelUnavailableError,
     ProviderUnavailableError,
     QuotaExceededError,
 )
@@ -103,6 +104,13 @@ class GeminiGenerator:
             if any(token in message for token in ("api key", "api_key", "401", "403")):
                 raise MissingApiKeyError(
                     "La API key de Gemini no existe, es inválida o no tiene acceso al modelo."
+                ) from exc
+            if "404" in message and any(
+                token in message for token in ("model", "not_found", "not available")
+            ):
+                raise ModelUnavailableError(
+                    f"El modelo {self.model} ya no está disponible. "
+                    "Configura GEMINI_MODEL con un modelo vigente."
                 ) from exc
             raise ProviderUnavailableError(
                 "Gemini no está disponible temporalmente. Conservamos tus documentos en la sesión."

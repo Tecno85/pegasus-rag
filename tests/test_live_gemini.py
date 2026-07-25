@@ -17,7 +17,7 @@ load_dotenv()
 def test_gemini_live_grounded_smoke() -> None:
     chunk = DocumentChunk("one", "La cobertura mínima es 80%.", "Guía", "Página 7", "doc")
     generator = GeminiGenerator(
-        os.environ["GEMINI_API_KEY"], os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+        os.environ["GEMINI_API_KEY"], os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
     )
 
     answer = generator.generate(

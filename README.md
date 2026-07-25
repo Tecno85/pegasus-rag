@@ -102,7 +102,7 @@ Edita `.env` y añade la key únicamente en tu máquina:
 
 ```dotenv
 GEMINI_API_KEY=tu_api_key
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-3.1-flash-lite
 ```
 
 Mantén desactivada la facturación de Gemini si quieres garantizar que, al agotarse la cuota
