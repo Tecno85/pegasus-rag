@@ -17,11 +17,10 @@ RUN pip install --upgrade pip && pip install .
 COPY app.py ./
 COPY .streamlit ./.streamlit
 COPY data/manifest.json ./data/manifest.json
-COPY data/raw/.gitkeep ./data/raw/.gitkeep
-COPY data/index/.gitkeep ./data/index/.gitkeep
 COPY scripts ./scripts
 
-RUN useradd --create-home --uid 10001 pegasus \
+RUN mkdir -p /app/data/raw /app/data/index \
+    && useradd --create-home --uid 10001 pegasus \
     && chown -R pegasus:pegasus /app /home/pegasus \
     && chmod +x /app/scripts/start.sh
 USER pegasus
@@ -31,4 +30,3 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
   CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
 CMD ["./scripts/start.sh"]
-
