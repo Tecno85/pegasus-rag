@@ -1,0 +1,35 @@
+{
+  "documents": [
+    {
+      "filename": "manual-onboarding.pdf",
+      "title": "Manual de Onboarding para Nuevos Desarrolladores",
+      "url": "https://cdn1.gnarususercontent.com.br/documents/6/internal/359dda5d-7daa-4aa1-832e-fb2843fcf70d.pdf",
+      "sha256": "47a9661a79415b458f95b7c586977c4a3820d8bd1e8f6ba11f245c0d97b72040"
+    },
+    {
+      "filename": "guia-backend.pdf",
+      "title": "Guía Oficial de Ingeniería Back-end",
+      "url": "https://cdn1.gnarususercontent.com.br/documents/6/internal/4a531743-36de-4b0b-b532-b5447b2c1ba7.pdf",
+      "sha256": "71d306d19c7cf45bc02e90b0a8ecf731a9b5d49ab900c6812b6b46e7aa8764bc"
+    },
+    {
+      "filename": "guia-frontend.pdf",
+      "title": "Guía Oficial de Ingeniería Front-end",
+      "url": "https://cdn1.gnarususercontent.com.br/documents/6/internal/a4266faf-77bf-4932-99b3-72e452051be2.pdf",
+      "sha256": "eac87d2060b57233296c23d028231c5037773855f07b445affb570f9ddfe3907"
+    },
+    {
+      "filename": "protocolo-incidentes.pdf",
+      "title": "Protocolo de Respuesta a Incidentes y Post-Mortems",
+      "url": "https://cdn1.gnarususercontent.com.br/documents/6/internal/1b414aa2-c5ca-40d4-8e9c-8d9e4dcdc955.pdf",
+      "sha256": "8839aa0e2a09f419a5637551c7e2c3aca8c34cd99ff55c1e44870fa0a870eefb"
+    },
+    {
+      "filename": "arquitectura-microservicios.pdf",
+      "title": "Arquitectura de Microservicios y Mapa de Dominios",
+      "url": "https://cdn1.gnarususercontent.com.br/documents/6/internal/ddb400f4-475a-4ddc-9ef3-a0cbb2789447.pdf",
+      "sha256": "9044c4366dc8b84612c073c12b2d8fc532bbcb9dc861b37ef967b1ccce46be11"
+    }
+  ]
+}
+

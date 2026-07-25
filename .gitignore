@@ -1,0 +1,24 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.DS_Store
+.playwright-cli/
+
+# Downloaded documents, generated vector index, and model caches
+data/raw/*
+!data/raw/.gitkeep
+data/index/*
+!data/index/.gitkeep
+.cache/
+
+# Runtime and user files
+uploads/
+*.log

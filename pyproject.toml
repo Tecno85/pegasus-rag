@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pegasus-rag"
+version = "0.1.0"
+description = "Asistente RAG para consultar la base documental de Santo Pegasus"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = { text = "MIT" }
+authors = [{ name = "Ivan Madrid" }]
+dependencies = [
+  "google-genai>=1.11,<2",
+  "langchain-text-splitters>=0.3.8,<1",
+  "numpy>=1.26,<3",
+  "openpyxl>=3.1.5,<4",
+  "pandas>=2.2,<3",
+  "pypdf>=5.4,<7",
+  "python-docx>=1.1.2,<2",
+  "python-dotenv>=1.0.1,<2",
+  "requests>=2.32,<3",
+  "sentence-transformers>=3.4,<6",
+  "streamlit>=1.44,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<8",
+  "ruff>=0.11,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pegasus_rag"]
+
+[tool.pytest.ini_options]
+addopts = "-q --disable-warnings --strict-markers"
+testpaths = ["tests"]
+markers = ["live: consumes the configured external Gemini API"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
