@@ -1,13 +1,19 @@
 import os
 
 import pytest
+from dotenv import load_dotenv
 
 from pegasus_rag.generator import GeminiGenerator
 from pegasus_rag.models import DocumentChunk, SearchResult
 
+load_dotenv()
+
 
 @pytest.mark.live
-@pytest.mark.skipif(not os.getenv("GEMINI_API_KEY"), reason="GEMINI_API_KEY not configured")
+@pytest.mark.skipif(
+    not os.getenv("GEMINI_API_KEY") or os.getenv("RUN_LIVE_TESTS") != "1",
+    reason="GEMINI_API_KEY or RUN_LIVE_TESTS not configured",
+)
 def test_gemini_live_grounded_smoke() -> None:
     chunk = DocumentChunk("one", "La cobertura mínima es 80%.", "Guía", "Página 7", "doc")
     generator = GeminiGenerator(
@@ -19,4 +25,3 @@ def test_gemini_live_grounded_smoke() -> None:
     )
 
     assert "80" in answer
-

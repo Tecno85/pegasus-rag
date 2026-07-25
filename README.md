@@ -88,7 +88,10 @@ git clone https://github.com/Tecno85/pegasus-rag.git
 cd pegasus-rag
 
 python3.11 -m venv .venv
+# Bash o Zsh:
 source .venv/bin/activate
+# Fish:
+# source .venv/bin/activate.fish
 python -m pip install --upgrade pip
 pip install -e ".[dev]"
 
@@ -130,7 +133,7 @@ make check      # lint + pruebas
 La prueba real de Gemini está desactivada por defecto. Para ejecutarla explícitamente:
 
 ```bash
-pytest -m live tests/test_live_gemini.py
+env RUN_LIVE_TESTS=1 .venv/bin/python -m pytest -m live tests/test_live_gemini.py -q
 ```
 
 ## Ejemplos de consultas
