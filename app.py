@@ -6,13 +6,13 @@ import streamlit as st
 
 from pegasus_rag.chunking import chunk_sections
 from pegasus_rag.config import Settings
-from pegasus_rag.corpus import build_base_index
+from pegasus_rag.corpus import build_base_index, load_or_build_base_index
 from pegasus_rag.embeddings import LocalSentenceTransformer
 from pegasus_rag.errors import PegasusError
 from pegasus_rag.generator import GeminiGenerator
 from pegasus_rag.loaders import load_document
 from pegasus_rag.service import RagService
-from pegasus_rag.store import VectorIndex, index_exists
+from pegasus_rag.store import VectorIndex
 
 st.set_page_config(
     page_title="Pegasus RAG",
@@ -61,16 +61,10 @@ def get_embedder(model_name: str) -> LocalSentenceTransformer:
     return LocalSentenceTransformer(model_name)
 
 
-@st.cache_resource(show_spinner="Cargando la base documental…")
-def get_base_index(model_name: str) -> VectorIndex | None:
+@st.cache_resource(show_spinner="Preparando la base documental (la primera carga puede tardar)…")
+def get_base_index(model_name: str) -> VectorIndex:
     settings = get_settings()
-    if not index_exists(settings.index_dir):
-        return None
-    return VectorIndex.load(
-        settings.index_dir,
-        get_embedder(model_name),
-        expected_model=model_name,
-    )
+    return load_or_build_base_index(settings, get_embedder(model_name))
 
 
 def initialize_session() -> None:
@@ -123,7 +117,12 @@ def process_uploads(uploaded_files, settings: Settings) -> None:
 
 initialize_session()
 settings = get_settings()
-base_index = get_base_index(settings.embedding_model)
+base_index_error = None
+try:
+    base_index = get_base_index(settings.embedding_model)
+except Exception as exc:
+    base_index = None
+    base_index_error = str(exc)
 
 with st.sidebar:
     st.markdown("## 🪽 Pegasus RAG")
@@ -136,6 +135,8 @@ with st.sidebar:
         )
     else:
         st.warning("La base inicial todavía no está indexada.")
+        if base_index_error:
+            st.caption(f"Detalle: {base_index_error}")
 
     uploaded_files = st.file_uploader(
         "Añadir documentos a esta sesión",
