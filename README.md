@@ -8,6 +8,8 @@ filas que respaldan cada afirmación.
 > Proyecto desarrollado para el Challenge Alura + Oracle. El MVP se ejecuta localmente y se publica
 > en **Streamlit Community Cloud**; OCI Compute queda documentado como alternativa de infraestructura.
 
+**Aplicación pública:** [pegasus-rag-tecno85.streamlit.app](https://pegasus-rag-tecno85.streamlit.app/)
+
 ## ¿Qué problema resuelve?
 
 Buscar una regla concreta entre decenas de páginas interrumpe el trabajo y facilita respuestas
@@ -262,9 +264,12 @@ incluye en la imagen o el repositorio.
 
 ### 4. Evidencia del Challenge
 
-- **Aplicación pública:** completar con la URL de Streamlit Community Cloud.
-- **Captura en OCI:** guardar en `docs/images/pegasus-rag-oci.png` y añadirla aquí tras el deploy.
+- **Aplicación pública:** [Pegasus RAG en Streamlit Community Cloud](https://pegasus-rag-tecno85.streamlit.app/).
+- **Prueba verificada:** pregunta sobre aprobaciones de Pull Requests, respuesta correcta y panel de
+  cinco fuentes documentales.
 - Probar desde una red externa una pregunta, una cita, una carga temporal y el health check.
+
+![Pegasus RAG funcionando en Streamlit Community Cloud](docs/images/pegasus-rag-streamlit.jpg)
 
 ## Estructura principal
 
