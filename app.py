@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import base64
+from html import escape
+from pathlib import Path
+
 import streamlit as st
 
 from pegasus_rag.chunking import chunk_sections
@@ -14,37 +18,228 @@ from pegasus_rag.loaders import load_document
 from pegasus_rag.service import RagService
 from pegasus_rag.store import VectorIndex
 
+ROOT_DIR = Path(__file__).resolve().parent
+WING_MARK_PATH = ROOT_DIR / "assets" / "pegasus-wing-mark.png"
+WING_HERO_PATH = ROOT_DIR / "assets" / "pegasus-wing-hero.png"
+
+
+def image_data_uri(path: Path) -> str:
+    """Return a local PNG as a browser-safe data URI."""
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
+
+wing_mark_uri = image_data_uri(WING_MARK_PATH)
+wing_hero_uri = image_data_uri(WING_HERO_PATH)
+
 st.set_page_config(
     page_title="Pegasus RAG",
-    page_icon="🪽",
+    page_icon=str(WING_MARK_PATH),
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 st.markdown(
-    """
+    f"""
     <style>
-      :root { --pegasus-cyan: #35d7d0; --pegasus-navy: #091525; --pegasus-blue: #142a46; }
-      .stApp {
-        background:
-          radial-gradient(circle at 90% 5%, rgba(53,215,208,.12), transparent 28rem),
-          linear-gradient(180deg, #07111f 0%, #0b1728 100%);
-      }
-      [data-testid="stSidebar"] { background: rgba(8, 22, 38, .96); }
-      .hero { padding: .4rem 0 1.2rem; }
-      .eyebrow { color: var(--pegasus-cyan); font-size: .76rem; font-weight: 700;
-                 letter-spacing: .14em; text-transform: uppercase; }
-      .hero h1 { margin: .25rem 0; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -.04em; }
-      .hero p { color: #aebed1; max-width: 48rem; font-size: 1.05rem; }
-      .status-card { border: 1px solid rgba(53,215,208,.22); background: rgba(18,42,70,.5);
-                     padding: .8rem 1rem; border-radius: .8rem; margin-bottom: 1rem; }
-      .source-card { border-left: 3px solid var(--pegasus-cyan); padding: .35rem .8rem;
-                     background: rgba(20,42,70,.42); border-radius: 0 .5rem .5rem 0; }
-      [data-testid="stChatMessage"] { border: 1px solid rgba(174,190,209,.12);
-                                      background: rgba(11,28,48,.72); border-radius: 1rem; }
-      .stButton > button { border-radius: .75rem; border-color: rgba(53,215,208,.35); }
-      .stButton > button:hover { border-color: var(--pegasus-cyan); color: var(--pegasus-cyan); }
-      footer { visibility: hidden; }
+      @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+      :root {{
+        --ink-950: #03101f;
+        --ink-900: #061324;
+        --ink-850: #09182b;
+        --ink-800: #0c1d33;
+        --line: rgba(153, 174, 207, .2);
+        --line-strong: rgba(153, 174, 207, .34);
+        --paper: #f5f2eb;
+        --muted: #b8c4d6;
+        --blue: #2f76ff;
+        --blue-bright: #4b8aff;
+        --coral: #ff675e;
+        --success: #38d98a;
+      }}
+
+      html, body, [class*="css"] {{ font-family: "Manrope", sans-serif; }}
+      .stApp {{
+        color: var(--paper);
+        background: var(--ink-900);
+      }}
+      [data-testid="stHeader"] {{ background: rgba(3, 16, 31, .88); }}
+      [data-testid="stDecoration"] {{ display: none; }}
+      [data-testid="stToolbar"] {{ color: var(--muted); }}
+      [data-testid="stMainBlockContainer"] {{
+        max-width: 1240px;
+        padding-top: 2.25rem;
+        padding-bottom: 5rem;
+      }}
+
+      [data-testid="stSidebar"] {{
+        background: var(--ink-950);
+        border-right: 1px solid var(--line);
+      }}
+      [data-testid="stSidebar"] [data-testid="stSidebarContent"] {{
+        padding: 1.45rem 1.35rem 2rem;
+      }}
+      [data-testid="stSidebar"] p,
+      [data-testid="stSidebar"] label,
+      [data-testid="stSidebar"] small {{
+        color: var(--muted);
+        font-size: .91rem;
+        line-height: 1.55;
+      }}
+      [data-testid="stSidebar"] hr {{ border-color: var(--line); margin: 1.35rem 0; }}
+
+      .brand {{ display: flex; align-items: center; gap: .8rem; margin: .15rem 0 2rem; }}
+      .brand img {{ width: 38px; height: 38px; object-fit: cover; border-radius: 7px; }}
+      .brand strong {{
+        display: block; color: var(--paper); font-size: 1.2rem; letter-spacing: -.025em;
+      }}
+      .brand span {{ color: #91a2ba; font-size: .86rem; }}
+      .section-label {{
+        color: #a9b7ca; font-size: .875rem; font-weight: 700; letter-spacing: .09em;
+        text-transform: uppercase; margin: .2rem 0 .65rem;
+      }}
+      .status-block {{
+        padding: .25rem 0 1.25rem; border-bottom: 1px solid var(--line); margin-bottom: 1.4rem;
+      }}
+      .status-title {{
+        display: flex; gap: .7rem; align-items: center; font-size: 1.05rem; color: var(--paper);
+      }}
+      .status-dot {{ width: 11px; height: 11px; border-radius: 50%; background: var(--blue);
+                     box-shadow: 0 0 0 4px rgba(47,118,255,.12); }}
+      .status-meta {{ color: var(--muted); font-size: .92rem; margin: .4rem 0 0 1.7rem; }}
+      .model-block {{ padding: .2rem 0; }}
+      .model-name {{ color: var(--paper); font-size: 1rem; font-weight: 700; margin-top: .25rem; }}
+      .model-name::after {{ content: ""; display: inline-block; width: 8px; height: 8px;
+                           border-radius: 50%; background: var(--success); margin-left: .55rem; }}
+      .model-id {{ color: #a9b7ca; font-size: .9rem; margin-top: .2rem; overflow-wrap: anywhere; }}
+      .privacy-note {{ border-left: 2px solid var(--blue); padding-left: .8rem; color: var(--muted);
+                       font-size: .88rem; line-height: 1.6; }}
+
+      [data-testid="stFileUploader"] {{ background: var(--ink-900); border-radius: .25rem; }}
+      [data-testid="stFileUploaderDropzone"] {{
+        background: transparent; border: 1px dashed var(--line-strong); border-radius: .35rem;
+        min-height: 104px; padding: .85rem;
+      }}
+      [data-testid="stFileUploaderDropzone"] button {{
+        background: transparent; border-color: var(--blue); color: var(--blue-bright);
+        font-size: .9rem;
+      }}
+      [data-testid="stSidebar"] .stButton > button {{
+        min-height: 2.75rem; border-radius: .3rem; border: 1px solid var(--line-strong);
+        background: transparent; color: var(--paper); font-size: .9rem; font-weight: 600;
+      }}
+      [data-testid="stSidebar"] .stButton > button[kind="primary"] {{
+        background: var(--blue); border-color: var(--blue); color: white;
+      }}
+      [data-testid="stSidebar"] .stButton > button:hover {{
+        border-color: var(--blue-bright); color: white; background: rgba(47,118,255,.1);
+      }}
+
+      .hero {{
+        min-height: 345px;
+        padding: 1rem 45% 1.5rem 0;
+        background-image: url('{wing_hero_uri}');
+        background-size: auto 100%;
+        background-repeat: no-repeat;
+        background-position: right top;
+      }}
+      .eyebrow {{
+        color: var(--blue-bright); font-size: .875rem; font-weight: 800;
+        letter-spacing: .1em; text-transform: uppercase;
+      }}
+      .hero h1 {{
+        color: var(--paper); margin: 1.15rem 0 1rem; max-width: 700px;
+        font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 700;
+        line-height: 1.02; letter-spacing: -.055em;
+      }}
+      .hero h1 .accent {{ color: var(--blue-bright); }}
+      .hero p {{ color: var(--muted); max-width: 40rem; font-size: 1.05rem; line-height: 1.65; }}
+
+      .composer-label {{
+        margin: .25rem 0 .55rem; color: #a9b7ca; font-size: .875rem; font-weight: 800;
+        letter-spacing: .1em; text-transform: uppercase;
+      }}
+      [data-testid="stForm"] {{ border: none; padding: 0; }}
+      [data-testid="stForm"] [data-testid="stTextInputRootElement"] {{
+        min-height: 4.25rem; border: 1px solid var(--blue); border-radius: .35rem;
+        background: var(--ink-850); box-shadow: none;
+      }}
+      [data-testid="stForm"] input {{
+        color: var(--paper); font-size: 1.02rem; padding-left: .75rem;
+      }}
+      [data-testid="stForm"] input::placeholder {{ color: #8798b0; opacity: 1; }}
+      [data-testid="stForm"] .stButton > button {{
+        min-height: 4.25rem; border-radius: .35rem; border-color: var(--blue);
+        background: var(--blue); color: white; font-size: .96rem; font-weight: 800;
+      }}
+      [data-testid="stForm"] .stButton > button:hover {{
+        background: var(--blue-bright); border-color: var(--blue-bright);
+      }}
+      [data-testid="stFormSubmitButton"] button {{
+        min-height: 4.25rem; border-radius: .35rem; border-color: var(--blue);
+        background: var(--blue); color: white; font-size: .96rem; font-weight: 800;
+      }}
+      [data-testid="stFormSubmitButton"] button:hover {{
+        background: var(--blue-bright); border-color: var(--blue-bright); color: white;
+      }}
+      .composer-tip {{
+        color: #a4b3c7; text-align: right; font-size: .9rem; margin: -.25rem 0 2rem;
+      }}
+
+      .content-label {{
+        margin: .5rem 0 .8rem; color: var(--blue-bright); font-size: .875rem;
+        font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      }}
+      .citation-label {{ color: var(--coral); }}
+      .stMain .stButton > button[kind="secondary"] {{
+        min-height: 3.9rem; justify-content: flex-start; text-align: left; white-space: normal;
+        background: transparent; color: var(--paper); border: 0;
+        border-bottom: 1px solid var(--line);
+        border-radius: 0; font-size: .96rem; line-height: 1.4; padding: .75rem .35rem;
+      }}
+      .stMain .stButton > button[kind="secondary"]:hover {{
+        color: white; border-bottom-color: var(--blue); background: rgba(47,118,255,.06);
+      }}
+      .evidence-preview {{
+        border-left: 2px solid var(--coral); padding: .15rem 0 .3rem 1.25rem; min-height: 210px;
+      }}
+      .evidence-preview strong {{ color: var(--paper); font-size: 1rem; }}
+      .evidence-preview p {{
+        color: var(--muted); font-size: .93rem; line-height: 1.55; margin: .6rem 0;
+      }}
+      .evidence-preview .evidence-meta {{ color: #afbdd0; font-size: .9rem; }}
+      .evidence-preview .coral {{ color: var(--coral); font-weight: 700; }}
+
+      [data-testid="stChatMessage"] {{
+        border: 1px solid var(--line); background: var(--ink-850); border-radius: .55rem;
+        padding: .45rem .75rem; margin-bottom: .8rem;
+      }}
+      [data-testid="stChatMessage"] p {{ color: #d8dfeb; font-size: 1rem; line-height: 1.65; }}
+      [data-testid="stExpander"] {{
+        background: var(--ink-800); border-color: var(--line); border-radius: .35rem;
+      }}
+      .source-card {{
+        border-left: 2px solid var(--coral); padding: .75rem 1rem; margin: .5rem 0 1rem;
+        background: rgba(255,103,94,.035); color: #d5ddea; font-size: .94rem; line-height: 1.6;
+      }}
+      a {{ color: var(--blue-bright) !important; }}
+      footer {{ visibility: hidden; }}
+
+      @media (max-width: 900px) {{
+        [data-testid="stMainBlockContainer"] {{ padding: 1.2rem 1.1rem 4rem; }}
+        .hero {{ min-height: auto; padding: .75rem 0 1rem; background-size: 58% auto;
+                 background-position: 125% 0; }}
+        .hero h1 {{ max-width: 78%; font-size: clamp(2.45rem, 11vw, 3.7rem); }}
+        .hero p {{ max-width: 90%; font-size: 1rem; }}
+      }}
+      @media (max-width: 600px) {{
+        .hero {{ background-image: none; }}
+        .hero {{ padding-top: 2.4rem; }}
+        .hero h1 {{ max-width: 100%; font-size: 2.65rem; }}
+        .composer-tip {{ text-align: left; margin-top: .25rem; }}
+        .evidence-preview {{ min-height: auto; margin-bottom: 1rem; }}
+      }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -85,7 +280,7 @@ def source_panel(sources: list[dict]) -> None:
                 st.markdown(f"**{label}**")
             st.caption(f"Similitud: {source['score']:.1%}")
             st.markdown(
-                f"<div class='source-card'>{source['excerpt']}</div>",
+                f"<div class='source-card'>{escape(source['excerpt'])}</div>",
                 unsafe_allow_html=True,
             )
 
@@ -125,12 +320,26 @@ except Exception as exc:
     base_index_error = str(exc)
 
 with st.sidebar:
-    st.markdown("## 🪽 Pegasus RAG")
-    st.caption("Base de conocimiento")
+    st.markdown(
+        f"""
+        <div class="brand">
+          <img src="{wing_mark_uri}" alt="Marca de ala plegada de Pegasus RAG">
+          <div><strong>Pegasus RAG</strong><span>Ala de Papel</span></div>
+        </div>
+        <div class="section-label">Base de conocimiento</div>
+        """,
+        unsafe_allow_html=True,
+    )
     if base_index:
         st.markdown(
-            f"<div class='status-card'>🟢 <strong>Base lista</strong><br>"
-            f"{len(base_index.chunks)} fragmentos indexados</div>",
+            f"""
+            <div class="status-block">
+              <div class="status-title">
+                <span class="status-dot"></span><strong>Base lista</strong>
+              </div>
+              <div class="status-meta">{len(base_index.chunks)} fragmentos indexados</div>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
     else:
@@ -138,8 +347,9 @@ with st.sidebar:
         if base_index_error:
             st.caption(f"Detalle: {base_index_error}")
 
+    st.markdown('<div class="section-label">Añadir documentos</div>', unsafe_allow_html=True)
     uploaded_files = st.file_uploader(
-        "Añadir documentos a esta sesión",
+        "Subir archivos",
         type=["pdf", "docx", "csv", "xlsx"],
         accept_multiple_files=True,
         help=(
@@ -147,7 +357,7 @@ with st.sidebar:
             "No se guardan al terminar la sesión."
         ),
     )
-    if st.button("Procesar documentos", use_container_width=True):
+    if st.button("Procesar documentos", type="primary", use_container_width=True):
         try:
             with st.spinner("Leyendo y generando embeddings locales…"):
                 process_uploads(uploaded_files, settings)
@@ -163,6 +373,7 @@ with st.sidebar:
             st.rerun()
 
     st.divider()
+    st.markdown('<div class="section-label">Herramientas</div>', unsafe_allow_html=True)
     if st.button("Limpiar conversación", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
@@ -182,19 +393,26 @@ with st.sidebar:
             st.error(f"No se pudo reconstruir la base: {exc}")
 
     st.divider()
+    st.markdown('<div class="section-label">Modelo configurado</div>', unsafe_allow_html=True)
     if settings.gemini_api_key:
-        st.caption(f"Gemini configurado · `{settings.gemini_model}`")
+        st.markdown(
+            f"<div class='model-block'><div class='model-name'>Gemini</div>"
+            f"<div class='model-id'>{escape(settings.gemini_model)}</div></div>",
+            unsafe_allow_html=True,
+        )
     else:
         st.warning("Configura GEMINI_API_KEY para generar respuestas.")
-    st.caption(
-        "🔒 Las cargas viven solo en memoria. No subas información sensible al demo público."
+    st.markdown(
+        "<div class='privacy-note'>Las cargas viven solo en memoria. "
+        "No subas información sensible al demo público.</div>",
+        unsafe_allow_html=True,
     )
 
 st.markdown(
     """
     <div class="hero">
       <div class="eyebrow">Conocimiento interno, sin abrir manuales</div>
-      <h1>Pregunta. Pegasus encuentra la evidencia.</h1>
+      <h1>Pregunta. Pegasus encuentra la <span class="accent">evidencia.</span></h1>
       <p>Consulta onboarding, ingeniería, arquitectura e incidentes. Cada respuesta está
       respaldada por fragmentos verificables de la documentación.</p>
     </div>
@@ -208,17 +426,60 @@ suggestions = [
     "¿Qué tiempo de respuesta tiene un incidente SEV-1?",
     "¿Cómo se propaga el Trace ID entre microservicios?",
 ]
+st.markdown('<div class="composer-label">Tu pregunta</div>', unsafe_allow_html=True)
+with st.form("question-form", clear_on_submit=True, border=False):
+    input_column, action_column = st.columns([8.2, 1.8], vertical_alignment="bottom")
+    with input_column:
+        typed_question = st.text_input(
+            "Pregunta sobre los documentos",
+            placeholder="Escribe tu pregunta con precisión…",
+            label_visibility="collapsed",
+        )
+    with action_column:
+        submitted = st.form_submit_button(
+            "Preguntar",
+            icon=":material/arrow_forward:",
+            use_container_width=True,
+        )
+st.markdown(
+    '<div class="composer-tip">Consejo: sé específico sobre el tema, servicio o incidente.</div>',
+    unsafe_allow_html=True,
+)
+
 suggested_question = None
 if not st.session_state.messages:
-    st.caption("Prueba una pregunta")
-    columns = st.columns(2)
-    for index, suggestion in enumerate(suggestions):
-        if columns[index % 2].button(
-            suggestion,
-            key=f"suggestion-{index}",
-            use_container_width=True,
-        ):
-            suggested_question = suggestion
+    suggestions_column, evidence_column = st.columns([1.08, 1], gap="large")
+    with suggestions_column:
+        st.markdown('<div class="content-label">Prueba una pregunta</div>', unsafe_allow_html=True)
+        for index, suggestion in enumerate(suggestions, start=1):
+            number_column, question_column = st.columns([0.13, 0.87], vertical_alignment="center")
+            with number_column:
+                st.markdown(
+                    f"<div style='color:var(--blue-bright);font-size:1.65rem;"
+                    f"font-weight:600'>{index:02d}</div>",
+                    unsafe_allow_html=True,
+                )
+            with question_column:
+                if st.button(
+                    suggestion,
+                    key=f"suggestion-{index}",
+                    use_container_width=True,
+                ):
+                    suggested_question = suggestion
+    with evidence_column:
+        st.markdown(
+            """
+            <div class="content-label citation-label">Así citamos</div>
+            <div class="evidence-preview">
+              <strong>Fuente verificable</strong>
+              <p>Cada respuesta identifica el documento y la ubicación exacta utilizada.</p>
+              <div class="evidence-meta">Documento · Página o sección · Similitud</div>
+              <p>“Aquí podrás desplegar el fragmento que respalda la respuesta.”</p>
+              <span class="coral">Evidencia visible al responder</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -226,8 +487,7 @@ for message in st.session_state.messages:
         if message["role"] == "assistant":
             source_panel(message.get("sources", []))
 
-typed_question = st.chat_input("Pregunta sobre los documentos…")
-question = typed_question or suggested_question
+question = (typed_question if submitted else None) or suggested_question
 if question:
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):

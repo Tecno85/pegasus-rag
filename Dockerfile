@@ -15,6 +15,7 @@ COPY src ./src
 RUN pip install --upgrade pip && pip install .
 
 COPY app.py ./
+COPY assets ./assets
 COPY .streamlit ./.streamlit
 COPY data/manifest.json ./data/manifest.json
 COPY scripts ./scripts
