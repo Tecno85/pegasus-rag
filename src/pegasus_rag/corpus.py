@@ -14,7 +14,7 @@ from pegasus_rag.config import Settings
 from pegasus_rag.embeddings import Embedder
 from pegasus_rag.loaders import load_path
 from pegasus_rag.models import RawSection
-from pegasus_rag.store import VectorIndex
+from pegasus_rag.store import VectorIndex, index_exists
 
 
 def read_manifest(path: Path) -> list[dict[str, str]]:
@@ -75,3 +75,20 @@ def build_base_index(
     index = VectorIndex.build(chunks, embedder)
     index.save(settings.index_dir, model_name=settings.embedding_model)
     return index
+
+
+def load_or_build_base_index(settings: Settings, embedder: Embedder) -> VectorIndex:
+    """Load the persisted corpus or build it on first start.
+
+    Streamlit Community Cloud launches ``app.py`` directly instead of using the
+    Docker entrypoint. Keeping this bootstrap in the application layer makes a
+    fresh deployment reproducible while preserving the persistent local index
+    used by Docker and development environments.
+    """
+    if index_exists(settings.index_dir):
+        return VectorIndex.load(
+            settings.index_dir,
+            embedder,
+            expected_model=settings.embedding_model,
+        )
+    return build_base_index(settings, embedder)

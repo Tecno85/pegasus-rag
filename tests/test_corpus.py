@@ -8,7 +8,12 @@ from types import SimpleNamespace
 import pytest
 
 from pegasus_rag.config import Settings
-from pegasus_rag.corpus import download_documents, read_manifest, sha256_file
+from pegasus_rag.corpus import (
+    download_documents,
+    load_or_build_base_index,
+    read_manifest,
+    sha256_file,
+)
 
 
 def make_settings(tmp_path: Path, manifest_path: Path) -> Settings:
@@ -80,3 +85,23 @@ def test_download_rejects_wrong_checksum(monkeypatch, tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="Checksum"):
         download_documents(make_settings(tmp_path, manifest_path))
 
+
+def test_load_or_build_creates_missing_index(monkeypatch, tmp_path: Path) -> None:
+    settings = make_settings(tmp_path, tmp_path / "manifest.json")
+    expected = object()
+    monkeypatch.setattr("pegasus_rag.corpus.index_exists", lambda _: False)
+    monkeypatch.setattr("pegasus_rag.corpus.build_base_index", lambda *_: expected)
+
+    assert load_or_build_base_index(settings, object()) is expected
+
+
+def test_load_or_build_reuses_existing_index(monkeypatch, tmp_path: Path) -> None:
+    settings = make_settings(tmp_path, tmp_path / "manifest.json")
+    expected = object()
+    monkeypatch.setattr("pegasus_rag.corpus.index_exists", lambda _: True)
+    monkeypatch.setattr(
+        "pegasus_rag.corpus.VectorIndex.load",
+        lambda directory, embedder, *, expected_model: expected,
+    )
+
+    assert load_or_build_base_index(settings, object()) is expected

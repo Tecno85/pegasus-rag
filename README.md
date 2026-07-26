@@ -5,8 +5,8 @@ natural sin abrir manuales. Recupera los fragmentos más relevantes de cinco doc
 **Santo Pegasus Soluciones**, genera una respuesta sustentada con Gemini y muestra las páginas o
 filas que respaldan cada afirmación.
 
-> Proyecto desarrollado para el Challenge Alura + Oracle. El MVP se ejecuta primero de forma local
-> y está preparado para desplegarse en una instancia **OCI Compute Always Free**.
+> Proyecto desarrollado para el Challenge Alura + Oracle. El MVP se ejecuta localmente y se publica
+> en **Streamlit Community Cloud**; OCI Compute queda documentado como alternativa de infraestructura.
 
 ## ¿Qué problema resuelve?
 
@@ -24,7 +24,7 @@ para que la persona pueda verificarla.
 - Embeddings multilingües e índice vectorial ejecutados localmente.
 - Respuesta segura cuando no existe evidencia suficiente.
 - Errores diferenciados para cuota, API key, archivos cifrados, corruptos o sin texto.
-- Docker Compose con Nginx y health checks para OCI.
+- Inicio reproducible en Streamlit Community Cloud y Docker Compose con Nginx para OCI.
 - Pruebas automatizadas sin consumir la API de Gemini.
 
 ## Arquitectura
@@ -57,7 +57,7 @@ la VM.
 | Embeddings | `paraphrase-multilingual-MiniLM-L12-v2` | Recuperación semántica local en español. |
 | Índice | NumPy + similitud coseno | Persistente, portable y sin un servicio facturable. |
 | Generación | Gemini mediante `google-genai` | Buena calidad con un nivel gratuito para demos. |
-| Infraestructura | Docker, Nginx, OCI Compute | Reproducibilidad, proxy público y health check. |
+| Infraestructura | Streamlit Community Cloud; Docker, Nginx y OCI opcionales | Publicación sencilla y alternativa autocontenida. |
 
 ## Documentos de demostración
 
@@ -118,6 +118,29 @@ streamlit run app.py
 
 Abre `http://localhost:8501`. La primera indexación descarga el modelo de embeddings y puede tardar
 varios minutos; las siguientes ejecuciones reutilizan la caché y el índice.
+
+## Despliegue recomendado: Streamlit Community Cloud
+
+El despliegue público no necesita VM, SSH, Docker ni Nginx. Community Cloud instala el proyecto
+desde `requirements.txt`, ejecuta `app.py` y construye automáticamente la base documental durante
+la primera carga.
+
+1. Entra en [share.streamlit.io](https://share.streamlit.io/) con tu cuenta de GitHub.
+2. Pulsa **Create app** y luego **Yup, I have an app**.
+3. Selecciona el repositorio `Tecno85/pegasus-rag`, la rama `main` y el archivo `app.py`.
+4. En **Advanced settings**, selecciona Python 3.11 o 3.12 y añade estos secretos:
+
+   ```toml
+   GEMINI_API_KEY = "tu_api_key"
+   GEMINI_MODEL = "gemini-3.1-flash-lite"
+   ```
+
+5. Pulsa **Deploy**. La primera carga descarga cinco PDF, verifica sus checksums, descarga el modelo
+   de embeddings y genera el índice; puede tardar varios minutos.
+
+Nunca pegues la API key en un archivo del repositorio. `.streamlit/secrets.toml` está excluido de
+Git para permitir pruebas locales sin publicar secretos. Community Cloud puede suspender una app
+inactiva y reconstruir su almacenamiento efímero al reiniciarla.
 
 ### Comandos útiles
 
@@ -200,8 +223,8 @@ docker compose logs -f app
 ### 1. Crear la instancia
 
 1. En OCI, crea una VM con Ubuntu 22.04 o 24.04.
-2. Selecciona una forma Ampere A1 elegible para Always Free; 4 OCPU y 24 GB de RAM ofrecen margen
-   suficiente para el modelo local. La capacidad depende de la región y de la cuenta.
+2. Selecciona una forma Ampere A1 elegible para Always Free. A julio de 2026, la cuota publicada
+   permite hasta 2 OCPU y 12 GB de RAM en total; la capacidad depende de la región y de la cuenta.
 3. Usa una subred pública, asigna una IP pública y guarda la llave SSH.
 4. En la lista de seguridad o NSG habilita TCP 80 desde Internet y TCP 22 solo desde tu IP.
 5. No crees servicios de IA, bases de datos o balanceadores facturables.
@@ -239,7 +262,7 @@ incluye en la imagen o el repositorio.
 
 ### 4. Evidencia del Challenge
 
-- **Aplicación pública:** pendiente de completar después de aprovisionar la VM.
+- **Aplicación pública:** completar con la URL de Streamlit Community Cloud.
 - **Captura en OCI:** guardar en `docs/images/pegasus-rag-oci.png` y añadirla aquí tras el deploy.
 - Probar desde una red externa una pregunta, una cita, una carga temporal y el health check.
 
@@ -249,6 +272,7 @@ incluye en la imagen o el repositorio.
 src/pegasus_rag/   configuración, lectores, embeddings, índice y servicio RAG
 app.py             interfaz y estado de sesión de Streamlit
 data/manifest.json fuentes reproducibles con checksums
+requirements.txt  instalación del proyecto en Streamlit Community Cloud
 scripts/           descarga, indexación e inicio del contenedor
 tests/             pruebas unitarias, integración simulada y smoke test opcional
 deploy/nginx/      reverse proxy para OCI
